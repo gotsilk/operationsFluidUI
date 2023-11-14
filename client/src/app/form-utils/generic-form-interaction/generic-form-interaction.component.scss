@@ -1,0 +1,17 @@
+.center {
+  margin: auto;
+}
+
+.ng-dirty{
+  border-color: #5b9d38;
+  border-width: medium;
+}
+
+//::ng-deep span.p-calendar{
+//  width: 100%!important;
+//}
+
+::ng-deep .p-chips-token {
+  margin-top: 2px ;
+  margin-bottom: 2px ;
+}

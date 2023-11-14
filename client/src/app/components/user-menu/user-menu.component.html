@@ -1,0 +1,30 @@
+<button class="rotate" mat-icon-button [matMenuTriggerFor]="menu">
+  <mat-icon>settings</mat-icon>
+</button>
+
+<mat-menu #menu="matMenu">
+  <button mat-menu-item suAuth [mode]="'edit'" [routerLink]="'/sql'">
+    <mat-icon>grid_view</mat-icon>
+    <span>SQL</span>
+  </button>
+  <button mat-menu-item (click)="exportDataEvent()">
+    <mat-icon>data_exploration</mat-icon>
+    <span>Export CSV</span>
+  </button>
+<!--  <button mat-menu-item (click)="navigateToFluid()">-->
+<!--    <mat-icon>logout</mat-icon>-->
+<!--    <span>Fluid Table **(ALPHA)**</span>-->
+<!--  </button>-->
+  <button mat-menu-item (click)="openTableLookupModal()">
+    <mat-icon>search</mat-icon>
+    <span>Table Lookup</span>
+  </button>
+  <button mat-menu-item [routerLink]="'/school-importer'">
+    <mat-icon>school</mat-icon>
+    <span>Add University</span>
+  </button>
+  <button mat-menu-item (click)="logout()">
+    <mat-icon>logout</mat-icon>
+    <span>Logout</span>
+  </button>
+</mat-menu>

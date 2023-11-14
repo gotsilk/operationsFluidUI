@@ -1,0 +1,193 @@
+// region Build Process Dependencies/Repositories
+buildscript {
+    repositories {
+        mavenLocal()
+        maven { url "https://repo.grails.org/grails/core" }
+        maven { url 'http://dl.bintray.com/vermeulen-mp/gradle-plugins' }
+    }
+    dependencies {
+        classpath "org.grails:grails-gradle-plugin:$grailsVersion"
+        classpath "org.grails.plugins:angular-scaffolding:2.0.0"
+        classpath "org.grails.plugins:hibernate5:${gormVersion-".RELEASE"}"
+        classpath "org.grails.plugins:views-gradle:1.2.9"
+    }
+}
+// endregion
+
+// region Plugin Task Imports
+apply plugin:"eclipse"
+apply plugin:"idea"
+apply plugin:"war"
+apply plugin:"org.grails.grails-web"
+apply plugin:"org.grails.plugins.views-json"
+apply plugin:"org.grails.grails-gsp"
+apply plugin: 'java'
+// endregion
+
+// region Application Dependency Repositories
+repositories {
+    mavenLocal()
+    maven { url "https://repo.grails.org/grails/core" }
+}
+// endregion
+
+// region Application Dependency Declaration
+ext['tomcat.version'] = '7.0.109'
+
+def generatedSourcesOutput = "src/generated/java"
+
+project.ext {
+    jaxbTargetDir = file("$generatedSourcesOutput")
+
+}
+
+sourceSets {
+    main {
+        java.srcDirs "$generatedSourcesOutput"
+    }
+}
+
+configurations {
+    xsd2java
+}
+
+dependencies {
+    compile 'org.grails.plugins:spring-security-core:3.2.3'
+    compile 'org.grails.plugins:spring-security-ldap:3.0.2'
+    compile 'org.grails.plugins:external-config:1.2.2'
+    compile 'de.ruedigermoeller:fst:2.56'
+
+    compile "org.springframework.boot:spring-boot-starter-logging"
+    compile "org.springframework.boot:spring-boot-autoconfigure"
+    compile "org.grails:grails-core"
+    compile "org.grails.plugins:gsp"
+    compile "org.springframework.boot:spring-boot-starter-actuator"
+    compile "org.grails:grails-plugin-url-mappings"
+    compile "org.grails:grails-plugin-rest"
+    compile "org.grails:grails-plugin-codecs"
+    compile "org.grails:grails-plugin-interceptors"
+    compile "org.grails:grails-plugin-services"
+    compile "org.grails:grails-plugin-datasource"
+    compile "org.grails:grails-plugin-databinding"
+    compile "org.grails:grails-web-boot"
+    compile "org.grails:grails-logging"
+    compile "org.grails.plugins:cache"
+    compile "org.grails.plugins:async"
+    compile "org.grails.plugins:angular-scaffolding:2.0.0"
+    compile "org.grails.plugins:hibernate5"
+    compile "org.hibernate:hibernate-core:5.1.16.Final"
+    compile "org.hibernate:hibernate-ehcache:5.1.16.Final"
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.8.9'
+    compile "org.grails.plugins:views-json"
+    compile "org.grails.plugins:views-json-templates"
+    runtime "org.grails.plugins:grails-console:2.1.1"
+    profile "org.grails.profiles:angular"
+    runtime "org.glassfish.web:el-impl:2.1.2-b03"
+    runtime "com.h2database:h2"
+    runtime "org.postgresql:postgresql:42.0.0"
+    runtime "org.apache.tomcat:tomcat-jdbc"
+    testCompile "org.grails:grails-gorm-testing-support"
+    testCompile "org.grails:grails-datastore-rest-client"
+    testCompile "org.grails:grails-web-testing-support"
+
+
+    provided "org.springframework.boot:spring-boot-starter-tomcat"
+
+    xsd2java "com.sun.xml.bind:jaxb-xjc:2.2.6"
+    xsd2java "com.sun.xml.bind:jaxb-impl:2.2.6"
+}
+// endregion
+
+// region Task Extensions
+war {
+    archiveName = "${gradle.extensions.getByName('appName')}-${gradle.extensions.getByName('appVersion')}.war"
+}
+
+bootRun {
+    // local.config.location is just a random name. You can use yours.
+    String propotronToken = System.getProperty('propotronToken') ?: System.getenv('propotronToken')
+    jvmArgs = ['-Dlocal.config.location=/srv/tomcat/conf/app-config.yml',
+               "-DpropotronToken=$propotronToken", "-Xms1024m", "-Xmx2048m", "-XX:MaxPermSize=512m",
+               "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5006","-Xdebug"]
+}
+
+clean {
+    delete fileTree(dir: "src/main/webapp")
+    delete fileTree(dir: "build")
+}
+// endregion
+
+// region New Task Definitions
+task prepWebApp() {
+    doLast {
+        File webAppDirectory = new File("${projectDir}/src/main/webapp");
+        if (webAppDirectory.exists()) {
+            webAppDirectory.delete();
+        }
+
+        webAppDirectory.mkdirs();
+
+        def file = new File("$projectDir/src/main/webapp/index.html")
+        if (!file.exists()) {
+            file.createNewFile()
+            file.text = "<html><head><title>Hi</title></head><body>Woah</body></html>"
+        }
+    }
+}
+
+task versionTxt() {
+    description = 'Generate version.txt file used by deployotron'
+    onlyIf { System.env.BUILD_NUMBER }
+    doLast {
+        File webAppDirectory = new File("${projectDir}/src/main/webapp");
+        if (!webAppDirectory.exists()) {
+            webAppDirectory.mkdir();
+        }
+
+        def file = new File("$projectDir/src/main/webapp/version.txt")
+        file.createNewFile()
+        file.text = "${gradle.extensions.getByName('appName')}-${gradle.extensions.getByName('appVersion')}_${System.env.BUILD_NUMBER}"
+    }
+}
+
+task xsd2java() {
+
+    System.setProperty('javax.xml.accessExternalSchema', 'all')
+
+    doLast {
+        jaxbTargetDir.mkdirs()
+
+        ant.taskdef(name: 'xjc', classname: 'com.sun.tools.xjc.XJCTask', classpath: configurations.xsd2java.asPath)
+        ant.jaxbTargetDir = jaxbTargetDir
+
+        ant.xjc(
+                destdir: '${jaxbTargetDir}',
+                package: 'com.kylesilk.app',
+                schema: 'src/main/resources/xsd/MyStatus.xsd'
+        )
+    }
+}
+
+task cleanBuildInfo {
+    delete fileTree(dir: 'build/resources/main')
+    delete fileTree(dir: 'build/classes')
+    delete fileTree(dir: "$generatedSourcesOutput")
+}
+// endregion
+
+// region Task Dependency Setting
+// Allow the parent project to insert dependencies into the children
+Map<String, List<String>> dependencies = project.extensions.getByName('dependencies')
+if(dependencies) {
+    for (Map.Entry dependencyConfig : dependencies) {
+        for (String dependencyName : dependencyConfig.value) {
+            tasks."${dependencyConfig.key}".mustRunAfter(dependencyName)
+        }
+    }
+}
+
+buildProperties.dependsOn(prepWebApp)
+buildProperties.dependsOn(cleanBuildInfo)
+war.dependsOn(          versionTxt)
+compileJava.dependsOn(xsd2java)
+// endregion

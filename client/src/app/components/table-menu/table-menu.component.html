@@ -1,0 +1,11 @@
+<div class="container-fluid" *ngIf="model">
+  <div class="row pb-2" id="tabMenu">
+    <nav mat-tab-nav-bar>
+      <a mat-tab-link (click)="headerClick()" *ngFor="let item of model"
+         [routerLink]="item.routerLink"
+         [active]="activeItem == item">
+        {{item.label}}
+      </a>
+    </nav>
+  </div>
+</div>

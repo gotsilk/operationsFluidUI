@@ -1,0 +1,8 @@
+<button *ngIf="init" pButton pRipple type="button" (click)="showSide = !showSide"
+        [matTooltip]="'create new menu'" icon="pi pi-plus"  class="p-button-rounded p-button-secondary">
+</button>
+
+<p-sidebar [(visible)]="showSide" *ngIf="!noItems">
+  <h2>Create new record</h2>
+  <p-menu [model]="items"></p-menu>
+</p-sidebar>

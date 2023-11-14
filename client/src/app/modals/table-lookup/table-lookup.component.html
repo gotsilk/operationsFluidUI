@@ -1,0 +1,18 @@
+<h1 mat-dialog-title> Table Lookup</h1>
+<div style="min-width: 500px">
+  <ag-grid-angular
+    style="height: 500px;"
+    [rowData]="tableList"
+    [domLayout]="'normal'"
+    [columnDefs]="columnDefs"
+    [rowSelection]="'single'"
+    class="ag-theme-balham"
+    (rowClicked)="nav($event)"
+    (gridReady)="onGridReady($event)"
+  >
+  </ag-grid-angular>
+</div>
+<div mat-dialog-actions>
+  <button mat-raised-button color="warn" [mat-dialog-close]="true">Close</button>
+</div>
+

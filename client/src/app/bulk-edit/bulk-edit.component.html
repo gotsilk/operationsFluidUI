@@ -1,0 +1,32 @@
+<mat-card>
+  <div class="row" style="height: 40px">
+    <div class="col-2">
+    <span style="font-size: x-large">Batch Change</span>
+    </div>
+    <div class="col-3">
+      <mat-form-field style="width: 100%">
+        <mat-label>Column</mat-label>
+        <mat-select [(ngModel)]="selectedItem" (selectionChange)="setCol(selectedItem)">
+          <mat-option  *ngFor="let item of dropDownList" [value]="item">
+            {{item.label}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="col">
+      <form [formGroup]="form" *ngIf="!resetting">
+        <su-generic-form-interaction [formControlName]="col.columnName" [parentRest]="api" [col]="col" [bulkMode]="true"></su-generic-form-interaction>
+        <form-error-message [col]="col" [form]="form"></form-error-message>
+      </form>
+    </div>
+    <div class="col-2">
+      <button pButton [style]="{ width: '100%' }" (click)="save()" [disabled]="!tableRows || tableRows?.length === 0 || form.invalid"
+                type="button" pRipple class="p-button w-100" [label]="'Submit to '+ tableRows?.length + ' rows'"></button>
+    </div>
+  </div>
+</mat-card>
+
+<mat-card *ngIf="debugging" class="pt-4">
+  form value: {{form.value | json}}
+</mat-card>
+

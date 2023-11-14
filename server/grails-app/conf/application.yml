@@ -1,0 +1,198 @@
+---
+grails:
+    profile: angular
+    codegen:
+        defaultPackage: 'com.kylesilk.@info.app.name@'
+    gorm:
+        reactor:
+            # Whether to translate GORM events into Reactor events
+            # Disabled by default for performance reasons
+            events: false
+    transaction:
+        chainedTransactionManagerPostProcessor:
+            enabled: true
+            blacklistPattern: '.*'
+info:
+    app:
+        name: '@info.app.name@'
+        version: '@info.app.version@'
+        grailsVersion: '@info.app.grailsVersion@'
+spring:
+    main:
+        banner-mode: "off"
+    groovy:
+        template:
+            check-template-location: false
+
+propotron:
+    app:
+        version: '@info.app.name@-@info.app.version@'
+
+# Spring Actuator Endpoints are Disabled by Default
+endpoints:
+    enabled: false
+    jmx:
+        enabled: true
+---
+# Admin security
+grails:
+    plugin:
+        springsecurity:
+            providerNames: [ 'ldapAuthProvider' ]
+            rejectIfNoRule: false
+
+            fii:
+                rejectPublicInvocations: false
+            auth:
+                forceHttps: true
+            ldap:
+                auth:
+                    hideUserNotFoundExceptions: false
+                authenticator:
+                    useBind: true
+                authorities:
+                    groupSearchFilter: 'member={0}'
+                    groupSearchBase: ''
+                    groupRolAttribute: 'cn'
+                    ignorePartialResultException: true
+                    retrieveGroupRoles: true
+                context:
+                    managerDn: 'ldaploginmanager'
+                    managerPassword: 'pw'
+                    server: 'ldap://'
+                    referral: 'ignore'
+                    anonymousReadOnly: false
+                search:
+                    base: 'DC=,DC=com'
+                    filter: '(sAMAccountName={0})'
+                    searchSubtree: true
+---
+grails:
+    plugin:
+        console:
+            csrfProtection:
+                enabled: false
+    resources:
+        pattern: /**
+    mime:
+        disable:
+            accept:
+                header:
+                    userAgents:
+                        - Gecko
+                        - WebKit
+                        - Presto
+                        - Trident
+        types:
+            json:
+              - application/json
+              - text/json   
+            hal:
+              - application/hal+json
+              - application/hal+xml  
+            xml:
+              - text/xml
+              - application/xml                                 
+            atom: application/atom+xml
+            css: text/css
+            csv: text/csv
+            js: text/javascript
+            rss: application/rss+xml
+            text: text/plain
+            svg: image/svg+xml
+            all: '*/*'            
+    urlmapping:
+        cache:
+            maxsize: 1000
+    controllers:
+        defaultScope: singleton
+    converters:
+        encoding: UTF-8
+
+---
+grails:
+    cors:
+        enabled: false
+---
+hibernate:
+    format_sql: true
+    #    flush:
+    #        mode: AUTO #GORM 6 Flush Mode COMMIT by Default. Session flushed with or without the presence of a transaction and before every query
+    enable_lazy_load_no_trans: true
+    cache:
+        queries: false
+        use_second_level_cache: false
+        use_query_cache: false
+---
+
+dataSource:
+    pooled: true
+    jmxExport: true
+    driverClassName: org.h2.Driver
+    username: sa
+    password: ''
+dataSources:
+#    fare DEV
+    testConnection1:
+#        for security, we will not hard code username/pw,
+#    that will be injected via external plugin service that starts up before db init
+        dbCreate: none
+        jmxExport: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        transactional: true
+        properties:
+            jmxEnabled: false
+            initialSize: 5
+            maxActive: 5
+            minIdle: 0
+            maxIdle: 1
+            maxWait: 10000
+            maxAge: 600000
+            timeBetweenEvictionRunsMillis: 5000
+            minEvictableIdleTimeMillis: 60000
+#            validationQuery: "SELECT 1"
+            validationQueryTimeout: 3
+            validationInterval: 15000
+            testOnBorrow: true
+            testWhileIdle: true
+            testOnReturn: false
+            jdbcInterceptors: "ConnectionState;StatementCache(max=200)"
+
+---
+
+environments:
+    development:
+        server:
+            port: 8333
+            ssl:
+                enabled: true
+                key-store: cert/keyStore
+                key-store-password: "changeit"
+                key-alias: localhost
+                key-password: "changeit"
+    test:
+        dataSource:
+            dbCreate: update
+            url: jdbc:h2:mem:testDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+    production:
+        dataSource:
+            dbCreate: none
+            url: jdbc:h2:./prodDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+            properties:
+                jmxEnabled: false
+                initialSize: 5
+                maxActive: 50
+                minIdle: 5
+                maxIdle: 25
+                maxWait: 10000
+                maxAge: 600000
+                timeBetweenEvictionRunsMillis: 5000
+                minEvictableIdleTimeMillis: 60000
+                validationQuery: SELECT 1
+                validationQueryTimeout: 3
+                validationInterval: 15000
+                testOnBorrow: true
+                testWhileIdle: true
+                testOnReturn: false
+                jdbcInterceptors: ConnectionState
+                defaultTransactionIsolation: 2 # TRANSACTION_READ_COMMITTED

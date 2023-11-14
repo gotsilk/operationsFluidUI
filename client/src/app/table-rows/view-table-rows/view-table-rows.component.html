@@ -1,0 +1,49 @@
+<div class="row" *ngIf="init">
+  <p-table [value]="rows" #dt [(selection)]="selectedRecords" [columns]="selectedCols" [rowsPerPageOptions]="paginationSizes"
+           styleClass="p-datatable-sm p-datatable-striped " selectionMode="multiple"
+           [showCurrentPageReport]="true" [paginator]="true" [rows]="10">
+
+    <ng-template pTemplate="header" let-columns>
+      <tr>
+        <th style="width: 3rem">
+          <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+        </th>
+        <th *ngFor="let header of columns" [pSortableColumn]="header.field" >
+          <div class="p-d-flex p-jc-between p-ai-center">
+            {{header.display | spaces}}<p-sortIcon [field]="header.field"></p-sortIcon>
+          </div>
+        </th>
+      </tr>
+<!--      the filter boxes-->
+      <tr>
+        <th></th>
+        <th *ngFor="let header of columns" >
+            <p-columnFilter type="text" [field]="header.field" [showMenu]="false" [matchMode]="suTextPrimeNgFilter">
+            </p-columnFilter>
+        </th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-record  let-columns="columns" >
+      <tr (dblclick)="navigate(record)">
+        <td>
+          <p-tableCheckbox [value]="record"></p-tableCheckbox>
+        </td>
+        <td *ngFor="let col of columns">
+          {{displayData(record[col.field])}}
+        </td>
+      </tr>
+    </ng-template>
+
+  </p-table>
+
+
+  <br>
+  <br>
+  <br>
+  <br>
+  <button mat-button mat-raised-button color="primary" (click)="remove()">remove</button>
+  <h4>{{selectedRecords?.length}}</h4>
+
+</div>
+

@@ -1,0 +1,123 @@
+import org.jutils.jprocesses.JProcesses;
+import org.jutils.jprocesses.model.ProcessInfo;
+
+
+// region Project Metadata
+String appName = gradle.extensions.getByName('appName')
+String appVersion = gradle.extensions.getByName('appVersion')
+String groupName = gradle.extensions.getByName('appGroup')
+allprojects { Project project ->
+    version appVersion
+    group groupName
+}
+
+project(appName) {Project project ->
+    project.extensions.add('dependencies', [
+            'compileJava':[":killOldNodeProcesses"],
+            'versionTxt':[":${appName}Client:buildClientRootApp", ":${appName}Client:buildClientApp", ":${appName}Client:buildClientApi"],
+            'war':[":${appName}Client:buildClientRootApp", ":${appName}Client:buildClientApp", ":${appName}Client:buildClientApi"]
+    ]);
+}
+
+project(appName + "Client") {Project project ->
+    project.extensions.add('dependencies', [
+            'nodeSetup':[":killOldNodeProcesses"]
+    ]);
+}
+
+buildscript {
+    repositories {
+        mavenLocal()
+        maven { url 'http://dl.bintray.com/vermeulen-mp/gradle-plugins' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jprocesses:jProcesses:1.6.4"
+    }
+}
+// endregion
+
+// region New Task Definitions
+
+JProcesses jProcesses = new JProcesses();
+jProcesses.fastMode(true);
+task killOldNodeProcesses() {
+    doFirst {
+        File pids = new File("${projectDir}/node-pids.lock");
+        if (pids.exists()) {
+            List<String> pidsToKill = (new String(pids.readBytes())).split(',');
+            for (String pid : pidsToKill) {
+                jProcesses.killProcess(Integer.parseInt(pid));
+            }
+
+            pids.delete();
+        }
+
+        List<String> externalPids = []
+        for (ProcessInfo processInfo : jProcesses.listProcesses('node.exe')) {
+            externalPids.add(processInfo.getPid());
+        }
+
+        if (externalPids.size() > 0) {
+            pids = new File("${projectDir}/node-external-pids.lock");
+            pids.delete();
+            pids.write(externalPids.join(','));
+        }
+    }
+}
+
+task determineRunningNodeProcesses() {
+    mustRunAfter("${appName}Client:bumpVersion")
+    doFirst {
+
+        List<String> externalPids = [];
+
+        File externalPidFile = new File("${projectDir}/node-external-pids.lock");
+        if (externalPidFile.exists()) {
+            externalPids.addAll(new String(externalPidFile.readBytes()).split(','));
+        }
+
+        externalPidFile.delete();
+
+        int i = 0;
+        while(i++ < 10) {
+            Thread.sleep(500);
+
+            List<String> PIDs = [];
+            for (ProcessInfo processInfo : jProcesses.listProcesses('node.exe')) {
+                if (!externalPids.contains(processInfo.getPid())) {
+                    PIDs.add(processInfo.getPid());
+                }
+            }
+
+            if (PIDs.size() > 0) {
+                File pids = new File("${projectDir}/node-pids.lock");
+                pids.write(PIDs.join(','));
+            }
+        }
+
+    }
+}
+
+task runApp {
+    dependsOn ":killOldNodeProcesses"
+    dependsOn ":determineRunningNodeProcesses"
+    dependsOn ":${appName}Client:buildClientWatch"
+    dependsOn ":${appName}:bootRun"
+}
+
+task buildRootApp {
+    dependsOn(":${appName}Client:buildClientRootApp")
+    dependsOn(":${appName}:build")
+}
+
+task buildApp {
+    dependsOn(":${appName}Client:buildClientApp")
+    dependsOn(":${appName}:build")
+}
+
+task buildApi {
+    dependsOn(":${appName}Client:buildClientApi")
+    dependsOn(":${appName}:build")
+}
+// endregion

@@ -1,0 +1,217 @@
+import groovy.transform.Field
+import hudson.tasks.test.AbstractTestResultAction
+
+@Field
+def settings;
+
+def runTests() {
+    /*
+    try {
+        sh "./grailsw test-app unit:"
+    } catch (e) {
+        currentBuild.result = 'UNSTABLE'
+    }
+    */
+}
+
+def publishTestResults() {
+  //  junit(allowEmptyResults: true, testResults: 'target/test-reports/TEST-*.xml, target/karma-reports/**/test-results.xml')
+}
+
+@NonCPS
+def getChangeSets() {
+    def changeSets = [];
+
+    for (def changeSet : currentBuild.changeSets) {
+        def items = [];
+        for (def item : changeSet.items) {
+            Map changedItems = [
+                    msg: item.msg,
+                    author: item.author.toString(),
+                    affectedPaths: item.affectedPaths,
+                    timestamp: item.timestamp
+            ]
+            items.push(changedItems)
+        }
+
+        changeSets.add([items: items]);
+    }
+
+    return changeSets;
+}
+
+def interpolateJiraTickets(String message) {
+    message.replaceAll(/[A-Z]{2,5}-[0-9]{0,9}/, { whole ->
+        return "<${env.JIRA_BASE_URL}/browse/${whole}|${whole}>"
+    })
+}
+
+List<String> grabJiraIssueIds(String message) {
+    List<String> bugs = [];
+
+    message.replaceAll(/[A-Z]{2,5}-[0-9]{0,9}/, {whole ->
+        bugs.add(whole);
+        return whole
+    })
+    return bugs.unique();
+}
+
+def notifyBuild() {
+    String buildStatus = currentBuild.result ?: 'SUCCESS';
+    String emojiCode = 'large_blue_circle';
+
+    switch (buildStatus) {
+        case 'FAILURE':
+            emojiCode = 'red_circle';
+            break;
+        case 'UNSTABLE':
+            emojiCode = 'warning';
+            break;
+    }
+
+    def changeSets = getChangeSets()
+    def slackChannel = settings.slackChannel;
+    if (env.GIT_BRANCH == 'master') {
+        slackChannel = '#devops';
+    }
+
+    List<String> jiraIssueIds = grabJiraIssueIds(changeSets.items.msg.join('\n'))
+
+    // region Base Slack Message
+    def blocks = [
+            [
+                    "type": "section",
+                    "text": [
+                            "type": "mrkdwn",
+                            "text": ":$emojiCode: *BUILD ${buildStatus}!*"
+                    ]
+            ],
+            [
+                    "type": "context",
+                    "elements": [
+                            [
+                                    "type": "mrkdwn",
+                                    "text": "Job: <${env.JOB_URL}|${env.JOB_NAME.replace('%2F', '/')}>"
+                            ],
+                            [
+                                    "type": "mrkdwn",
+                                    "text": "Build: <${env.BUILD_URL}|${env.BUILD_NUMBER}>"
+                            ]
+                    ]
+            ],
+            [
+                    "type": "context",
+                    "elements": [
+                            [
+                                    "type": "mrkdwn",
+                                    "text": "JIRA Issues: ${jiraIssueIds.size() > 0 ? interpolateJiraTickets(jiraIssueIds.join(' ')) : '_No issues referenced_'}"
+                            ]
+                    ]
+            ],
+            [
+                    "type": "context",
+                    "elements": [
+                            [
+                                    "type": "mrkdwn",
+                                    "text": "Duration: ${currentBuild.durationString.replace(' and counting', '')}"
+                            ],
+                            [
+                                    "type": "mrkdwn",
+                                    "text": "Commits: ${changeSets.items.flatten().size()}"
+                            ],
+                            [
+                                    "type": "mrkdwn",
+                                    "text": "Affected Files: ${changeSets.items.flatten().affectedPaths.flatten().unique().size()}"
+                            ]
+                    ]
+            ]
+
+    ]
+
+    String testStatus = testStatuses()
+    if (testStatus) {
+        blocks.push([
+                "type": "context",
+                "elements": [
+                        [
+                                "type": "mrkdwn",
+                                "text": testStatus
+                        ]
+                ]
+        ])
+    }
+    // endregion
+
+    def slackResponse = slackSend(channel: settings.slackChannel, blocks: blocks)
+
+    // region Message Thread
+    for (def changeSet : changeSets) {
+        def commitMsgBlocks = [];
+        for (def item : changeSet.items) {
+            def subBlocks = [
+                    [
+                            "type": "section",
+                            "text": [
+                                    "type": "mrkdwn",
+                                    "text": "${interpolateJiraTickets(item.msg)}"
+                            ]
+                    ]
+            ]
+
+            subBlocks.add([
+                    "type": "context",
+                    "elements": [
+                            [
+                                    "type": "mrkdwn",
+                                    "text": "${new Date(item.timestamp).format('MM/dd/yy h:mma')} - ${item.author}"
+                            ]
+                    ]
+            ])
+
+            commitMsgBlocks.addAll(subBlocks)
+        }
+
+        slackSend(channel: slackResponse.threadId, blocks: commitMsgBlocks)
+    }
+    // endregion
+}
+
+def validateBranchName() {
+    if (env.BRANCH_NAME != 'master' && env.BRANCH_NAME != settings.branchName) {
+        throw new Exception('Branch name in settings does not match branch name in GIT')
+    }
+}
+
+def changeJobDescription() {
+    if (settings.jobDescription) {
+        currentBuild.rawBuild.project.description = settings.jobDescription
+    }
+
+    return null;
+}
+
+@NonCPS
+def testStatuses() {
+    def testStatus = null
+    AbstractTestResultAction testResultAction = currentBuild.rawBuild.getAction(AbstractTestResultAction.class)
+    if (testResultAction != null) {
+        def total = testResultAction.totalCount
+        def failed = testResultAction.failCount
+        def skipped = testResultAction.skipCount
+        def passed = total - failed - skipped
+        testStatus = "Tests:\n  Passed: ${passed}, Failed: ${failed} ${testResultAction.failureDiffString}, Skipped: ${skipped}"
+    }
+    return testStatus
+}
+
+def addGitTag() {
+    sshagent(credentials: ['c9105c02-641f-439a-9851-f5ee58f9e8da']) {
+        def repository = "git@" + env.GIT_URL
+        def tag = "build/${env.GIT_BRANCH}/${env.BUILD_NUMBER}"
+        sh("git remote set-url origin $repository")
+        sh("git tag --force $tag")
+        sh("git push --force origin $tag")
+    }
+}
+
+return this;

@@ -1,0 +1,129 @@
+<div [ngSwitch]="col.columnType" class="w-100 row" *ngIf="init"
+     pTooltip="original value: {{ogData}}" [tooltipOptions]="{tooltipPosition: 'top'}" [tooltipDisabled]="!checkForDiffValue()">
+  <div class="col-3 mr-2 center" *ngIf="!bulkMode">
+    <label>{{col.columnName | spaces}}</label>
+    <sub *ngIf="helperText"><br>{{helperText}}</sub>
+  </div>
+
+  <div *ngSwitchCase="ColTypes.VALIGATOR" class="col">
+    <su-valigator-field [(ngModel)]="model" [disabled]="isDisabled" (ngModelChange)="suUpdate($event)" ></su-valigator-field>
+  </div>
+
+  <div *ngSwitchCase="ColTypes.URL" class="col">
+    <textarea pInputTextarea  style="width: 100%" [(ngModel)]="model" [disabled]="isDisabled" (ngModelChange)="suUpdate($event)" type="text"></textarea>
+  </div>
+
+  <div *ngSwitchCase="ColTypes.AUTO_DROP_DOWN" class="col">
+    <su-auto-drop-down
+      [bulkMode]="bulkMode"
+      [tableName]="col.columnName"
+      [(ngModel)]="model"
+      [disabled]="isDisabled"
+      (ngModelChange)="suUpdate($event)"
+      [service]="parentRest">
+    </su-auto-drop-down>
+  </div>
+
+  <div *ngSwitchCase="ColTypes.TEXT_AREA" class="col">
+    <textarea  [autoResize]="true" [(ngModel)]="model" [disabled]="isDisabled" (ngModelChange)="suUpdate($event)"
+               style="width: 100%"  pInputTextarea></textarea>
+  </div>
+
+  <div *ngSwitchCase="ColTypes.READ_ONLY_DATE_PICKER" class="col">
+    <p-calendar [(ngModel)]="model" [disabled]="true" ></p-calendar>
+  </div>
+
+  <div *ngSwitchCase="ColTypes.CHIPS" class="col">
+    <p-chips *ngIf="chipViewToggle === false" [disabled]="isDisabled" [(ngModel)]="chipSplitValue"
+             [allowDuplicate]="false"  separator="," (ngModelChange)="sanitizeChipVars($event)"></p-chips>
+
+    <textarea [disabled]="isDisabled"  (ngModelChange)="sanitizeChipVars($event)"
+              *ngIf="chipViewToggle === true"  [autoResize]="true" [(ngModel)]="model"  style="width: 100%"  pInputTextarea></textarea>
+  </div>
+
+  <div *ngSwitchCase="ColTypes.TIME_PICKER" class="col center">
+    <p-calendar [disabled]="isDisabled" [showSeconds]="true" (ngModelChange)="setTIme($event)"
+                [(ngModel)]="timePickerDate" [timeOnly]="true" dateFormat="24" inputId="timeonly"></p-calendar>
+  </div>
+
+  <div *ngSwitchCase="ColTypes.IN_LIST" class="col">
+    <mat-form-field style="width: 100%">
+      <mat-select  [(ngModel)]="model" [disabled]="isDisabled" (ngModelChange)="suUpdate($event)" >
+        <mat-option *ngFor="let item of col.constraints.inlist" [value]="item">
+          {{item}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div *ngSwitchCase="ColTypes.STRING" class="col">
+    <div>
+      <input  style="width: 100%" [(ngModel)]="model" *ngIf="!textAreaMode"
+              type="text" pInputText [disabled]="isDisabled" (ngModelChange)="suUpdate($event)">
+      <textarea  [autoResize]="true" [(ngModel)]="model" [disabled]="isDisabled" (ngModelChange)="suUpdate($event)"
+                 style="width: 100%" *ngIf="textAreaMode" pInputTextarea>
+      </textarea>
+      </div>
+  </div>
+
+  <div *ngSwitchCase="ColTypes.NUMBER" class="col">
+    <input style="width: 100%" type="number" pInputText [(ngModel)]="model"
+           [disabled]="isDisabled" (ngModelChange)="suUpdate($event)">
+  </div>
+
+  <div *ngSwitchCase="ColTypes.DATE_PICKER" class="col center">
+    <p-calendar *ngIf="!datePickerResetter" [showTime]="true" hourFormat="24" [showButtonBar]="true" [(ngModel)]="model"
+                [monthNavigator]="true" [yearNavigator]="true" [showTransitionOptions]="'200ms'"
+                [hideTransitionOptions]="'200ms'" [disabled]="isDisabled" (ngModelChange)="suUpdate($event)"
+                yearRange="{{minYear}}:{{maxYear}}" >
+    </p-calendar>
+  </div>
+
+  <div *ngSwitchCase="ColTypes.BOOLEAN" class="col center">
+    <p-checkbox [binary]="true" [disabled]="isDisabled" (ngModelChange)="suUpdate($event)"
+                class="center" [(ngModel)]="model"></p-checkbox>
+  </div>
+
+  <div *ngSwitchDefault class="col">
+    <h3>ERROR: COL TYPE NOT DEFINED --> {{col.columnType}}</h3>
+  </div>
+
+  <div class="col-2 center" [hidden]="col.columnType != ColTypes.STRING || col.constraints.inlist">
+    <mat-slide-toggle
+      [hidden]="bulkMode"
+      [matTooltip]="'Text Area Toggle'"
+      class="example-margin"
+      [color]="'primary'"
+      [ngModelOptions]="{standalone: true}"
+      [(ngModel)]="textAreaMode"
+      [checked]="textAreaMode">
+    </mat-slide-toggle>
+  </div>
+
+  <div class="col-2 center" *ngIf="col.columnType == ColTypes.URL" [hidden]="bulkMode">
+    <p-button pRipple icon="pi pi-external-link" styleClass="p-button-sm center p-button-outlined" label="Website" type="button"
+            (click)="!model ? $event.stopPropagation() : openSiteNewTab()" [disabled]="!model">
+    </p-button>
+  </div>
+
+  <div class="col-2 center" *ngIf="col.columnType == ColTypes.DATE_PICKER" [hidden]="bulkMode">
+    <p-button pRipple icon="pi pi-external-link" styleClass="p-button-sm center p-button-outlined"
+              label="Clear Time" type="button"
+              (click)="clearTime()" [disabled]="!model || isDisabled">
+    </p-button>
+  </div>
+
+  <div class="col-2 center" *ngIf="col.columnType == ColTypes.CHIPS" [hidden]="bulkMode">
+    <p-checkbox class="center"  label="Switch Raw Value" [binary]="true"
+                  [(ngModel)]="chipViewToggle"></p-checkbox>
+  </div>
+
+</div>
+
+<div *ngIf="debug">
+  <br>
+  <span style="background-color: bisque">DEBUG RAW DATA: <b>{{model}}</b></span>
+  <br>
+</div>
+
+

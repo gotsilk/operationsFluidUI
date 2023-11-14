@@ -1,0 +1,8 @@
+<h1>CAN caches</h1>
+<h3>Geolocation</h3>
+<div *ngFor="let server of serverList; index as i">
+  <span>{{server.url}}</span> <button [disabled]="server.flushing" (click)="flushCache(i)">Flush</button>
+</div>
+<div>
+  <button pButton pRipple class="p-button" (click)="flushCache()">Flush ALL servers</button>
+</div>

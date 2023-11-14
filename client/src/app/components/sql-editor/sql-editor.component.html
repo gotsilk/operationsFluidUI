@@ -1,0 +1,34 @@
+<div class="container-fluid">
+  <div class="row">
+    <ngx-codemirror
+      [(ngModel)]="sqlModel"
+      [options]="options"
+    ></ngx-codemirror>
+
+  </div>
+  <div class="row">
+    <button (click)="execute()" mat-button mat-raised-button color="primary">EXECUTE</button>
+  </div>
+
+  <div class="row">
+    <div *ngIf="results"  class="container-fluid">
+      <ag-grid-angular
+        style="height: 100%;width: 100%"
+        [rowData]="results"
+        [domLayout]="'autoHeight'"
+        [columnDefs]="columnDefs"
+        [rowSelection]="'single'"
+        [gridOptions]="gridOptions"
+        class="ag-theme-balham"
+        [rowBuffer]="0"
+        (gridReady)="onGridReady($event)"
+        [pagination]="true"
+      >
+      </ag-grid-angular>
+    </div>
+  </div>
+</div>
+
+
+
+

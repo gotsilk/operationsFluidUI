@@ -1,0 +1,40 @@
+<!--<input type="radio" value="autoHeight" [(ngModel)]="type"/>full-->
+<!--<input type="radio" value="normal" [(ngModel)]="type"/>fill-->
+<div class="container-fluid">
+  <div class="row">
+    <div class="col">
+      <div [ngStyle]="style" *ngIf="init">
+        <ag-grid-angular
+          style="height: 100%;width: 100%"
+          [rowData]="rows"
+          [domLayout]="'normal'"
+          [columnDefs]="columnDefs"
+          [rowSelection]="'multiple'"
+          [gridOptions]="gridOptions"
+          (rowDoubleClicked)="goToDetails($event)"
+          [rowMultiSelectWithClick]="true"
+          (selectionChanged)="updateBulkEditRows($event)"
+          class="ag-theme-balham"
+          [frameworkComponents]="frameworkComponents"
+          [rowBuffer]="0"
+          (gridReady)="onGridReady($event)"
+          (firstDataRendered)="sizeUp($event)"
+          (rowDataChanged)="sizeUp($event)"
+          [pagination]="true"
+        >
+        </ag-grid-angular>
+      </div>
+    </div>
+  </div>
+  <div class="row pt-2" id="batchForm" *ngIf="init">
+    <div class="col">
+      <su-bulk-edit [api]="dataSourceRest" [tableName]="tableConst.name" (newEditVals)="refreshFromBulkEdit()" [blackList]="bulkBlackList"
+                     [rows]="visiRows" [tableStructure]="tableStructure"></su-bulk-edit>
+    </div>
+  </div>
+</div>
+
+
+<ngx-spinner>
+  <h1 style="color: white">Loading...</h1>
+</ngx-spinner>

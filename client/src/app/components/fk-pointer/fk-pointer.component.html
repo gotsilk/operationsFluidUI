@@ -1,0 +1,7 @@
+<p-panel [header]="'Attached '+ (tableName | spaces) + '\'s'" class="p-3" *ngIf="init && rowIds.length > 0">
+  <div class="row">
+    <div class="col-2 p-2" *ngFor="let id of rowIds ">
+      <p-button pRipple label="ID: {{id}}" (click)="goToRow(id)"></p-button>
+    </div>
+  </div>
+</p-panel>

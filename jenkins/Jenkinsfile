@@ -1,0 +1,65 @@
+def settings;
+def tasks;
+
+pipeline {
+    agent any
+
+    tools {
+        jdk 'jdk-8'
+    }
+
+    stages {
+        stage('Setup') {
+            steps {
+                script {
+
+                    settings = load "jenkins/settings.jenkinsfile";
+                    tasks = load "jenkins/tasks.jenkinsfile";
+                    tasks.settings = settings;
+                    tasks.changeJobDescription();
+                    tasks.validateBranchName();
+                }
+            }
+        }
+
+        stage ('Clean') {
+            steps {
+                script {
+                    sh 'rm -f server/build/libs/*.war'
+                    sh "chmod +x ./gradlew"
+                    sh "./gradlew clean"
+                }
+            }
+        }
+
+        stage ('BuildApi') {
+            steps {
+                script {
+                    sh "chmod +x ./gradlew"
+                    sh "./gradlew buildRootApp"
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            archiveArtifacts artifacts: 'server/build/libs/*.war,server/src/main/webapp/version.txt', fingerprint: true
+            script {
+                tasks.publishTestResults()
+            }
+        }
+        unstable {
+            script {
+                tasks.publishTestResults()
+            }
+        }
+        always {
+            script {
+                tasks.addGitTag()
+                tasks.notifyBuild()
+            }
+        }
+    }
+
+}

@@ -1,0 +1,16 @@
+input {
+  width: 100%
+}
+
+.ui-inputtext{
+  width: 100%
+}
+
+mat-checkbox{
+  margin-top: 15px!important;
+}
+
+mat-card{
+  background-color: #f9f9f9;
+}
+

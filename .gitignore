@@ -1,0 +1,10 @@
+*.idea
+.gradle/
+*.iml
+server/build/*
+server/src/main/webapp/*
+server/out/*
+node-pids.lock
+node-external-pids.lock
+/server/src/generated/
+/client/.angular/*

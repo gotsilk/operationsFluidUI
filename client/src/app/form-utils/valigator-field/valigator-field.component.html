@@ -1,0 +1,14 @@
+<div class="container-fluid" style="padding: 0">
+  <div class="row">
+    <div class="col-8">
+      <input [disabled]="isDisabled"  style="width: 100%" [(ngModel)]="valiKey" (ngModelChange)="onChange(valiKey)" type="text" pInputText>
+    </div>
+    <div class="col-4">
+      <p-button [disabled]="!valiKey" pRipple icon="pi pi-external-link" styleClass="p-button-sm center p-button-outlined" label="Valigator"  type="button"
+                (click)="openValigatorModal()">
+      </p-button>
+    </div>
+  </div>
+</div>
+
+

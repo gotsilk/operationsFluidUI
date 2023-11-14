@@ -1,0 +1,43 @@
+  <div class="row m-3" *ngIf="editMode" suAuth [mode]="'edit'">
+    <div class="col">
+      <button (click)="save.emit(true); currentlyLoading = 'saveBtn'" [class]="form.invalid ? 'p-button-warning' :'p-button-success'"
+              [loading]="loadingFlag && currentlyLoading == 'saveBtn'"
+              [disabled]="!form.valid" pButton pRipple [label]="form.invalid ? 'INVALID' : 'Save'">
+      </button>
+      <span class="ps-2" *ngIf="mode == EditMode.EDIT">
+            <button (click)="cancel.emit(true)" pButton pRipple label="Cancel" class="p-button-secondary" ></button>
+      </span>
+    </div>
+    <div class="col">
+      <button style="width: 70%" (click)="copyChange.emit(true)" *ngIf="id"
+              [disabled]="!form.valid" pButton pRipple class="p-button-outlined" label="Copy"></button>
+    </div>
+    <div class="col" *ngIf="!isProd">
+      <button style="width: 70%" pButton pRipple class="p-button-outlined" label="Copy to PROD"
+              [disabled]="!form.valid || !transferRowDataEnabled"
+              [loading]="loadingFlag && currentlyLoading == 'trsBtn'"
+              (click)="transferRowData.emit(true);currentlyLoading = 'trsBtn'">
+      </button>
+    </div>
+    <div class="col">
+      <button pButton pRipple class="p-button-outlined p-button-secondary"
+              style="width: 70%"  [disabled]="!form.valid || !transferRowDataLocallyEnabled"
+              (click)="transferLocally.emit(true)" label="Copy to Other Region">
+      </button>
+    </div>
+    <div class="col">
+      <p-splitButton label="Import Row Data" icon="pi pi-plus" (onClick)="importData.emit(true)" [model]="splitMenu"
+                     class="p-button-outlined" >
+      </p-splitButton>
+    </div>
+  </div>
+  <div *ngIf="!editMode" class="m-3" >
+    <button pButton (click)="toggled = ! toggled; toggleEdit.emit(toggled)"
+            pRipple [label]="mode !== EditMode.EDIT ? 'Create' :'Edit'">
+    </button>
+  </div>
+
+
+  <div *ngIf="debugging" class="row">
+    {{form.errors | json}}
+  </div>

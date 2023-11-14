@@ -1,0 +1,68 @@
+plugins {
+  id "com.moowork.node" version "1.3.1"
+}
+
+// region Task Extensions
+node {
+  version = '16.13.1'
+  download = true
+}
+// endregion
+
+// region New Task Definitions
+task installJsonModifier(type: NpmTask, dependsOn: 'npmInstall') {
+  group = 'application'
+  description = 'Match package.json version with version declared in gradle'
+  args = ['install', 'json']
+}
+
+task matchName(type: NpmTask, dependsOn: 'npmInstall') {
+  group = 'application'
+  description = 'Match package.json version with version declared in gradle'
+  args = ['run', 'renamePackage', "var name='" + gradle.extensions.getByName('appName') + "'; this.name=name"]
+}
+
+task bumpVersion(type: NpmTask, dependsOn: 'matchName') {
+  group = 'application'
+  description = 'Match package.json version with version declared in gradle'
+  args = ['version', version, '--allow-same-version']
+}
+task buildClientWatch(type: NpmTask, dependsOn: 'bumpVersion') {
+  group = 'application'
+  description = 'Start client side server'
+  args = ['run', 'build:watch']
+}
+
+task buildClientRootApp(type: NpmTask, dependsOn: 'bumpVersion') {
+  group = 'application'
+  description = 'Start client side server'
+  args = ['run', 'build']
+}
+
+task buildClientApp(type: NpmTask, dependsOn: 'bumpVersion') {
+  group = 'application'
+  description = 'Start client side server'
+  args = ['run', 'build:href', "/${gradle.extensions.getByName('appName')}/"]
+}
+
+task buildClientApi(type: NpmTask, dependsOn: 'bumpVersion') {
+  group = 'application'
+  description = 'Start client side server'
+  args = ['run', 'build:href', "/${gradle.extensions.getByName('appName')}-${gradle.extensions.getByName('appVersion').substring(0, 3)}/"]
+}
+task test(type: YarnTask, dependsOn: 'yarn') {
+  group = 'verification'
+  description = 'Execute unit tests'
+  args = ['run', 'test']
+}
+
+task integrationTest(type: YarnTask, dependsOn: 'yarn') {
+  args = ['run', 'e2e']
+}
+// endregion
+
+task buildClientWatchRaw(type: NpmTask) {
+  group = 'application'
+  description = 'Start client side server'
+  args = ['run', 'build:watch']
+}

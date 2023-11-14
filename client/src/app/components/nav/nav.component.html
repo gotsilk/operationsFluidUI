@@ -1,0 +1,47 @@
+<div *ngIf="init" class="flex-container opers-bg" id="header">
+  <div style="margin-right: auto" class="center p-2">
+    <app-create-new-menu *ngIf="showCreateMenu"></app-create-new-menu>
+    <span class="ps-2" style="color: #fff!important;font-size: x-large">Database Management</span>
+  </div>
+
+  <div [hidden]="!showChangeHeaders" class="center p-2">
+    <button pButton type="button" (click)="openChangeHeadersBtnSheet(true)" label="Change Headers"
+            class="p-button-raised p-button-help p-button-rounded"></button>
+  </div>
+
+  <div class="center p-2" *ngIf="dataSource">
+    <span class="pe-2">
+        <img height="30px"  width="50px" [matTooltip]="dataSourceParts.region+'-'+dataSourceParts.environment"
+             [src]="'/flag-'+
+             (dataSourceParts.region.toLowerCase() === 'flyaway' ? 'faPink' : dataSourceParts.region.toLowerCase())  +'.svg'" [alt]="dataSourceParts.region">
+    </span>
+    <p-message severity="success" text="Connected to:
+      {{dataSourceParts.type}}-{{dataSourceParts.region}}{{dataSourceParts.environment}} / {{dataSource.url}}"></p-message>
+    <span class="ps-2">
+      <p-button pRipple label="Change" styleClass="p-button-sm p-button-warning" (click)="openChangedDataSource()"></p-button>
+    </span>
+  </div>
+
+  <div class="center align-content-center user-action pt-2" >
+    <h4 class="pt-2" style="color: #fff!important">User: {{name}} -
+      <app-su-auth-watcher [mode]="'view'"></app-su-auth-watcher>
+      <app-su-auth-watcher [mode]="'edit'"></app-su-auth-watcher>
+    </h4>
+  </div>
+
+  <div class="center pe-3 pt-2">
+    <app-user-menu></app-user-menu>
+  </div>
+
+</div>
+
+<div class="flex-container" id="dbTypeHeaders">
+  <div style="flex-grow: 1">
+    <nav mat-tab-nav-bar  mat-align-tabs="center">
+      <a mat-tab-link *ngFor="let item of DataSourceTypes | keyvalue" [routerLink]="item.value"
+         (click)="activeLink = item.value;showCreateMenuFn(true)"
+         [active]="activeLink == item.value"> {{item.key | titlecase}} </a>
+    </nav>
+  </div>
+</div>
+

@@ -1,0 +1,35 @@
+<div class="container-fluid" style="padding-left: 0;">
+  <div class="row">
+    <div class="col-8">
+      <p-autoComplete
+        *ngIf="data && data.length > 0"
+        [field]="'id'"
+        [dataKey]="'id'"
+        [dropdown]="true"
+        (completeMethod)="search($event)"
+        [suggestions]="searchResults"
+        (onClear)="suOnchange('')"
+        (ngModelChange)="suOnchange($event)"
+        [(ngModel)]="currentSelection"
+        [completeOnFocus]="true"
+        [virtualScroll]="true"
+        [forceSelection]="true"
+        [disabled]="isDisabled">
+
+        <ng-template let-item pTemplate="item">
+          <div class="ui-helper-clearfix">
+            {{item.display}}
+          </div>
+        </ng-template>
+
+      </p-autoComplete>
+    </div>
+    <div class="col-4" *ngIf="!bulkMode">
+      <button *ngIf="data && data.length > 0" pButton pRipple label="Go to row ->" (click)="navigate()" [disabled]="!currentSelection"></button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="!data || data.length == 0">
+  <p>NO ITEMS</p>
+</div>

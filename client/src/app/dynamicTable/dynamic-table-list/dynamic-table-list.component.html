@@ -1,0 +1,28 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col">
+      <div [ngStyle]="style" *ngIf="init">
+        <ag-grid-angular
+          style="height: 100%;width: 100%"
+          [rowData]="rows"
+          [domLayout]="'normal'"
+          [columnDefs]="colHeaders"
+          [rowSelection]="'multiple'"
+          [gridOptions]="gridOptions"
+          (rowClicked)="goToDetails($event)"
+          class="ag-theme-balham"
+          [rowBuffer]="0"
+          (gridReady)="onGridReady($event)"
+          (firstDataRendered)="sizeUp($event)"
+          [pagination]="true"
+        >
+        </ag-grid-angular>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<ngx-spinner>
+  <h1 style="color: white">Loading...</h1>
+</ngx-spinner>

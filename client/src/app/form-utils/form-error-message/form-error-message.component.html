@@ -1,0 +1,8 @@
+<div *ngIf="control.invalid && init">
+  <p-message severity="error" text="This field is Required" *ngIf="control?.hasError('required')"></p-message>
+  <p-message severity="error" text="Pattern doesnt match: {{col.constraints.pattern}}" *ngIf="control?.hasError('pattern')"></p-message>
+  <p-message severity="error" text="Exceeds max length: {{col.constraints.maxsize}}" *ngIf="control?.hasError('maxlength')"></p-message>
+  <p-message severity="error" text="Duplicate Name" *ngIf="control?.hasError('dupeName')"></p-message>
+  <p-message severity="error" text="Max Value is:  {{col.constraints.max}}" *ngIf="control?.hasError('max')"></p-message>
+  <p-message severity="error" text="Min Value is:  {{col.constraints.min}}" *ngIf="control?.hasError('min')"></p-message>
+</div>

@@ -1,0 +1,15 @@
+<div class="body-flex">
+  <app-nav (initComplete)="navInitComplete = $event"></app-nav>
+  <div class="container-fluid p-2" #rootLevelContainer id="rootLevelContainer"  *ngIf="navInitComplete">
+    <router-outlet></router-outlet>
+  </div>
+  <div class="footerWrap" id="footer" #footer>
+    <div class="footer">
+      <div class="footerContent">
+        <footer style="font-size: .8em">&#xA9; 1999-{{now |date:'yyyy'}} Kyle Silk<sup>&#174;</sup>. All rights reserved.</footer>
+      </div>
+    </div>
+  </div>
+  <p-toast id="rootToast" position="top-center" key="rootToast"></p-toast>
+</div>
+<p-confirmDialog [style]="{width: '25vw'}" [baseZIndex]="10000" rejectButtonStyleClass="p-button-text"></p-confirmDialog>

@@ -1,0 +1,50 @@
+<!--expects and needs the Utilites class, and 'getDataStructureModel','rowData','ogData','tableStructure','tableKey','chunkedList'-->
+<div *ngIf="detailsInit" class="p-0">
+  <form [formGroup]="form" autocomplete="off">
+    <p-panel class="p-3" header="Actions" suAuth [mode]="'edit'">
+      <div class="row" *ngIf="editMode">
+        <div class="col">
+          <button (click)="save()" [disabled]="!form.valid" mat-flat-button color="primary" style="background-color: mediumseagreen">Save</button>
+          <span class="ps-2" >
+            <button (click)="confirmDiscardChanges()" mat-flat-button color="warn">Cancel</button>
+          </span>
+        </div>
+        <div class="col">
+          <button style="width: 70%" mat-stroked-button color="primary">Copy</button>
+        </div>
+        <div class="col">
+          <button mat-stroked-button style="width: 70%" color="primary" (click)="transferRowData(tableKey,rowData)">Transfer Current Row Data</button>
+        </div>
+        <div class="col">
+          <button mat-stroked-button style="width: 70%" color="primary"
+                  (click)="rowData = getStoredTableSpecificObject(tableKey);
+                  setFormValues(form,rowData,tableStructure)">Import Row Data</button>
+        </div>
+        <div class="col">
+          <button mat-stroked-button style="width: 70%" color="primary" (click)="viewStoredObj(tableKey)">View Stored Row Data</button>
+        </div>
+      </div>
+      <div *ngIf="!editMode" >
+        <button (click)="toggleEdit(form)" mat-raised-button style="background-color: #7c7c7c" color="accent">Edit</button>
+      </div>
+    </p-panel>
+    <p-panel header="Details for {{tableName}}, ID: {{idName}} {{rowData[idName]}} | EDITING: {{form.enabled}}"
+             suAuth [mode]="'view'">
+      <div class="row">
+        <div *ngFor="let chunk of chunkedList" [ngClass]="chunkedList.length > 2 ? 'col-6' : 'col-12'" class="p-2">
+          <div *ngFor="let col of chunk"  class="p-1 align-items-center" [ngClass]="form.enabled ? 'su-hover':''">
+
+            <div *ngIf="!blackList.includes(col.columnName)" class="w-100">
+              <app-generic-form-interaction [(form)]="form" [col]="col"></app-generic-form-interaction>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p-panel>
+  </form>
+</div>
+
+
+<div class="p-5"  *ngIf="!detailsInit" >
+  <p-progressBar mode="indeterminate"></p-progressBar>
+</div>

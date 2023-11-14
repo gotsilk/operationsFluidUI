@@ -1,0 +1,77 @@
+<div *ngIf="data.originalModel">
+  <h2 mat-dialog-title>Changes: </h2>
+    <p-table [value]="changes" [rowHover]="true" [scrollable]="true" [autoLayout]="true" scrollHeight="70vh">
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="field">
+            <div class="p-d-flex p-jc-between p-ai-center">
+              Field Name
+              <p-sortIcon field="field"></p-sortIcon>
+              <p-columnFilter type="text" field="field" display="menu" class="p-ml-auto"></p-columnFilter>
+            </div>
+          </th>
+
+          <th pSortableColumn="oldVal">
+            <div class="p-d-flex p-jc-between p-ai-center">
+              Old Value
+              <p-sortIcon field="oldVal"></p-sortIcon>
+              <p-columnFilter type="text" field="oldVal" display="menu" class="p-ml-auto"></p-columnFilter>
+            </div>
+          </th>
+
+          <th pSortableColumn="newVal">
+            <div class="p-d-flex p-jc-between p-ai-center">
+              New Value
+              <p-sortIcon field="newVal"></p-sortIcon>
+              <p-columnFilter type="text" field="newVal" display="menu" class="p-ml-auto"></p-columnFilter>
+            </div>
+          </th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-data>
+        <tr class="p-selectable-row">
+          <td>
+
+            {{data.field}}
+          </td>
+
+          <td>
+
+            {{data.oldVal}}
+          </td>
+
+          <td>
+            {{data.newVal}}
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="footer" *ngIf="changes.length > 0">
+        <tr>
+          <td colspan="2">Columns changed: </td>
+          <td>{{changes.length}}</td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="3">
+            <span>No changed data...</span>
+          </td>
+        </tr>
+
+      </ng-template>
+
+    </p-table>
+</div>
+
+<div *ngIf="!data.originalModel">
+  <h2 mat-dialog-title>Save New Row</h2>
+</div>
+
+<div mat-dialog-actions>
+  <button pButton class="p-button-success p-button-outlined me-1" *ngIf="changes.length > 0 || !data.originalModel" [mat-dialog-close]="true">Save</button>
+  <button pButton [mat-dialog-close]="false" class="ms-1 p-button-danger p-button-outlined"  cdkFocusInitial>Cancel</button>
+</div>
+

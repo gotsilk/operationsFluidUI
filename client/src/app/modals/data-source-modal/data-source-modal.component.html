@@ -1,0 +1,23 @@
+<h1 mat-dialog-title> Change DataSource</h1>
+<div style="min-width: 500px">
+  <div class="py-0">
+    <p-tabMenu [model]="dbTypes" [activeItem]="active"></p-tabMenu>
+  </div>
+
+  <ag-grid-angular
+    *ngIf="init"
+    [rowData]="currentSources"
+    [domLayout]="'autoHeight'"
+    [columnDefs]="columnDefs"
+    [rowSelection]="'single'"
+    class="ag-theme-balham"
+    (gridReady)="onGridReady($event)"
+    [frameworkComponents]="frameworkComponents"
+    (rowSelected)="chooseDataSource($event)"
+  >
+  </ag-grid-angular>
+</div>
+<div mat-dialog-actions>
+  <button mat-raised-button color="warn" [mat-dialog-close]="null">Close</button>
+</div>
+

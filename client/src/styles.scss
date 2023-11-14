@@ -1,0 +1,25 @@
+@import '~bootstrap/scss/bootstrap';
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+@import "~ag-grid-community/dist/styles/ag-grid.css";
+@import "~ag-grid-community/dist/styles/ag-theme-balham.css";
+@import "~primeicons/primeicons.css";
+@import "~primeng/resources/themes/saga-blue/theme.css";
+@import "~primeng/resources/primeng.min.css";
+@import '~codemirror/lib/codemirror';
+@import '~codemirror/theme/material';
+//@import "~@fullcalendar/core/main.min.css";
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.footerWrap{
+  margin-top: auto;
+}
+.su-hover:hover {
+  background-color: #e7e7e7;
+}
+.p-tabmenu-nav .p-menuitem-text {
+  line-height: 0.5!important;
+}

@@ -1,0 +1,47 @@
+<!--expects and needs the Utilites class, and 'getDataStructureModel','rowData','ogData','tableStructure','tableKey','chunkedList'-->
+<div *ngIf="detailsInit" class="p-0">
+  <form [formGroup]="form" autocomplete="off">
+    <app-table-row-details-actions
+    [id]="this.rowData ? this.rowData[idName] : null"
+    [form]="form"
+    (cancel)="confirmDiscardChanges()"
+    (copyChange)="copy($event)"
+    (importData)="importData()"
+    (save)="save()"
+    [loadingFlag]="savingFlag"
+    (toggleEdit)="toggleEdit(form)"
+    [editMode]="formEditEnabled"
+    [isProd]="isProd"
+    (transferRowData)="transferRowData()"
+    (transferLocally)="transferRowDataLocally()"
+    (viewStoredObj)="viewStoredObj()">
+    </app-table-row-details-actions>
+    <p-panel header="Details for {{tableName | spaces}}, ID: {{ rowData  && rowData[idName] ? rowData[idName] : 'NEW'}}
+{{rowData && rowData.lastUpdated ? 'Last Updated: ' + (rowData.lastUpdated | date: 'mediumDate') : '' }}
+             {{rowData && rowData.dateCreated ? '| Date Created: ' + (rowData.dateCreated | date: 'mediumDate') : '' }}"
+             suAuth [mode]="'view'">
+      <div class="row">
+        <div *ngFor="let chunk of chunkedList" [ngClass]="chunkedList.length > 2 ? 'col-12 col-md-6' : 'col-12'" class="p-2">
+          <div *ngFor="let col of chunk"  class="p-1 align-items-center" [ngClass]="form.enabled ? 'su-hover':''">
+
+            <div *ngIf="!blackList.includes(col.columnName)" class="w-100">
+              <su-generic-form-interaction [formControlName]="col.columnName" [col]="col" [parentRest]="rest"></su-generic-form-interaction>
+              <form-error-message [col]="col" [form]="form"></form-error-message>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </p-panel>
+  </form>
+</div>
+<div class="p-5"  *ngIf="!detailsInit" >
+  <p-progressBar mode="indeterminate"></p-progressBar>
+</div>
+
+<ng-container #fkSpot></ng-container>
+
+<div *ngIf="debug">
+  {{this.formInitValueState | json}}
+</div>
+

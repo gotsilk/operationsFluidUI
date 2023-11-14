@@ -1,0 +1,25 @@
+String appName = 'operations'
+String appVersion = '0.9'
+String group = 'com.kylesilk'
+
+// region USE CAUTION IF YOU EDIT ANYTHING IN THIS REGION
+
+include 'client'
+include 'server'
+
+rootProject.name = appName + 'Root'
+
+gradle.extensions.add('appName', appName)
+gradle.extensions.add('appVersion', appVersion)
+gradle.extensions.add('appGroup', group)
+rootProject.children.each {
+    switch (it.name) {
+        case 'server':
+            it.name = appName;
+            break;
+        case 'client':
+            it.name = appName + 'Client'
+    }
+}
+
+// endregion

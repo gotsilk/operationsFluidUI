@@ -1,0 +1,10 @@
+//:host::ng-deep.p-sortable-column {
+////padding-bottom: 5px;
+//}
+:host::ng-deep.p-datatable.p-datatable-sm .p-datatable-thead > tr > th {
+  padding: 0.3rem 0.3rem;
+}
+:host::ng-deep.p-sortable-column {
+  border-top: none!important;
+  font-size: .8rem;
+}

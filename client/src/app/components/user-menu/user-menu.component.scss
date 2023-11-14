@@ -1,0 +1,10 @@
+button.rotate:focus{
+  transform: rotate(90deg);
+  -webkit-transition: transform .5s ease-in-out;
+  -moz-transition:transform .5s ease-in-out;
+  -ms-transition:transform .5s ease-in-out;
+}
+
+button.rotate {
+  color: white;
+}

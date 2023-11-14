@@ -1,0 +1,25 @@
+  <h2 mat-dialog-title> Change Headers </h2>
+  <div mat-dialog-content>
+    <div class="container-fluid no-overlay">
+      <div class="row">
+        <p-dataView #dv [value]="headersChunked" *ngIf="headersChunked" layout="grid" filterBy="name">
+          <ng-template pTemplate="header" >
+            <div class="flex flex-column md:flex-row md:justify-content-between" [hidden]="headersChunked.length < 10">
+              <span class="p-input-icon-left mb-2 md:mb-0">
+                <i class="pi pi-search"></i>
+                <input type="search" [(ngModel)]="searchTxt" pInputText placeholder="Search by Name" (ngModelChange)="dv.filter($event)">
+                <span class="p-3">
+                  <button pButton pRipple (click)="apply()">Apply</button>
+                </span>
+              </span>
+            </div>
+          </ng-template>
+          <ng-template let-header pTemplate="gridItem">
+            <div class="col-4 p-2" style="display: inline-block">
+              <p-checkbox [binary]="true" [(ngModel)]="header.checked" [label]="header.name | spaces"></p-checkbox>
+            </div>
+          </ng-template>
+        </p-dataView>
+      </div>
+    </div>
+  </div>
